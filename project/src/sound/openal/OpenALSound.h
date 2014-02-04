@@ -45,10 +45,8 @@ class OpenALChannel;
    {
       //LOG_SOUND("Sound.mm OpenALInit()");
       
-      if (!openal_is_init && openal_init_attempts < MAX_ATTEMPTS)
+      while (!openal_is_init && openal_init_attempts < MAX_ATTEMPTS)
       {
-         openal_init_attempts++;
-
          sgDevice = alcOpenDevice(0); // select the "preferred device"
          if (sgDevice)
          {
@@ -64,13 +62,17 @@ class OpenALChannel;
 
          if (!openal_is_init) 
          {
-            printf("OpenAL initialization failed : %d", alGetError());
+            printf("OpenAL initialization failed (attempt %d/%d) : %d", openal_init_attempts + 1, MAX_ATTEMPTS + 1, alGetError());
+            // wait a little bit before retrying
+            Sleep(100);
          }
 
          if (!openal_is_init && openal_init_attempts >= MAX_ATTEMPTS)
          {
             fprintf(stderr, "Could not initialize OpenAL after %d tries. Giving up.\n", MAX_ATTEMPTS);
          }
+
+         openal_init_attempts++;
       }
 
       return sgContext;
