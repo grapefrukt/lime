@@ -38,22 +38,41 @@ class OpenALChannel;
    static QuickVec<intptr_t> sgOpenChannels;
 
    static bool openal_is_init = false;
+   static int openal_init_attempts = 0;
+   static const int MAX_ATTEMPTS = 5;
 
    static bool OpenALInit()
    {
       //LOG_SOUND("Sound.mm OpenALInit()");
       
-      if (!openal_is_init)
+      if (!openal_is_init && openal_init_attempts < MAX_ATTEMPTS)
       {
-         openal_is_init = true;
+         openal_init_attempts++;
+
          sgDevice = alcOpenDevice(0); // select the "preferred device"
          if (sgDevice)
          {
-            sgContext=alcCreateContext(sgDevice,0);
-            alcMakeContextCurrent(sgContext);
+            sgContext = alcCreateContext(sgDevice, 0);
+            if (sgContext) 
+            {
+               alcMakeContextCurrent(sgContext);
+               sgOpenChannels = QuickVec<intptr_t>();
+
+               openal_is_init = true;
+            }
          }
-         sgOpenChannels = QuickVec<intptr_t>();
+
+         if (!openal_is_init) 
+         {
+            printf("OpenAL initialization failed : %d", alGetError());
+         }
+
+         if (!openal_is_init && openal_init_attempts >= MAX_ATTEMPTS)
+         {
+            fprintf(stderr, "Could not initialize OpenAL after %d tries. Giving up.\n", MAX_ATTEMPTS);
+         }
       }
+
       return sgContext;
    }
    
