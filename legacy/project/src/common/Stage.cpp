@@ -193,7 +193,7 @@ void Stage::HandleEvent(Event &inEvent)
       // Non-cancelled back key ...
       if (inEvent.result==0 && inEvent.value==27 && inEvent.type == etKeyUp)
       {
-          StopAnimation();
+          //StopAnimation();
       }
       #endif
       return;
